@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
+const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
 
@@ -50,6 +51,11 @@ const getSchedulesByUser = (req, res, next) => {
 };
 
 const createSchedule = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return next(new HttpError("Invalid inputs", 422));
+	}
+
 	const { title, description, coordinates, address, creator } = req.body;
 	const createdSchedule = {
 		id: uuidv4(),
@@ -64,10 +70,15 @@ const createSchedule = (req, res, next) => {
 };
 
 const updateSchedule = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return next(new HttpError("Invalid inputs", 422));
+	}
+
 	const { title, description, coordinates, address } = req.body;
 	const scheduleId = req.params.sid;
 	const updatedSchedule = {
-		...coordinates.find((s) => s.id === scheduleId),
+		...DUMMYSCHEDULES.find((s) => s.id === scheduleId),
 	};
 	const scheduleIndex = DUMMYSCHEDULES.findIndex((s) => s.id === scheduleId);
 
@@ -82,6 +93,9 @@ const updateSchedule = (req, res, next) => {
 
 const deleteSchedule = (req, res, next) => {
 	const scheduleId = req.params.sid;
+	if (!DUMMYSCHEDULES.find((s) => s.id === scheduleId)) {
+		return next(new HttpError("No Schedule was found", 404));
+	}
 	DUMMYSCHEDULES = DUMMYSCHEDULES.filter((s) => s.id !== scheduleId);
 	res.status(200).json({ message: "Deleted Schedule" });
 };
