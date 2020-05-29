@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
+const getCoordsForAddress = require("../utilities/location");
 
 let DUMMYSCHEDULES = [
 	{
@@ -50,13 +51,20 @@ const getSchedulesByUser = (req, res, next) => {
 	res.json({ schedules });
 };
 
-const createSchedule = (req, res, next) => {
+const createSchedule = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { title, description, coordinates, address, creator } = req.body;
+	const { title, description, address, creator } = req.body;
+
+	let coordinates;
+	try {
+		coordinates = await getCoordsForAddress(address);
+	} catch (error) {
+		return next(error);
+	}
 	const createdSchedule = {
 		id: uuidv4(),
 		title,
