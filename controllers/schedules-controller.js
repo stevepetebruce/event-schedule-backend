@@ -3,52 +3,37 @@ const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../utilities/location");
+const Schedule = require("../models/schedule");
 
-let DUMMYSCHEDULES = [
-	{
-		id: "s2",
-		title: "schedule 2",
-		description: "description of test",
-		location: {
-			lat: 40.7,
-			lng: 23.4,
-		},
-		address: "test",
-		creator: "u2",
-	},
-	{
-		id: "s3",
-		title: "schedule dfgdfgdfg",
-		description: "description of testgdfgdgfd",
-		location: {
-			lat: 40.7,
-			lng: 23.4,
-		},
-		address: "testggg",
-		creator: "u2",
-	},
-];
-
-const getScheduleById = (req, res, next) => {
+const getScheduleById = async (req, res, next) => {
 	const scheduleId = req.params.sid;
-	const schedule = DUMMYSCHEDULES.find((s) => {
-		return s.id === scheduleId;
-	});
-	if (!schedule) {
-		return next(new HttpError("No schedule was found", 404));
+
+	let schedule;
+	try {
+		schedule = await Schedule.findById(scheduleId);
+	} catch (error) {
+		return next(new HttpError("Failed to find schedule", 500));
 	}
-	res.json({ schedule });
+
+	if (!schedule) {
+		return next(new HttpError("No schedule was found with this id", 404));
+	}
+	res.json({ schedule: schedule.toObject({ getters: true }) });
 };
 
-const getSchedulesByUser = (req, res, next) => {
+const getSchedulesByUser = async (req, res, next) => {
 	const userId = req.params.uid;
-	const schedules = DUMMYSCHEDULES.filter((u) => {
-		return u.creator === userId;
-	});
-	if (!schedules || schedules.length === 0) {
-		return next(new HttpError("No user was found", 404));
+
+	let schedules;
+	try {
+		schedules = await Schedule.find({ creator: userId });
+	} catch (error) {
+		return next(new HttpError("Failed to find user", 500));
 	}
-	res.json({ schedules });
+	if (!schedules || schedules.length === 0) {
+		return next(new HttpError("No user was found with this Id", 404));
+	}
+	res.json({ schedules: schedules.map((s) => s.toObject({ getters: true })) });
 };
 
 const createSchedule = async (req, res, next) => {
@@ -65,15 +50,21 @@ const createSchedule = async (req, res, next) => {
 	} catch (error) {
 		return next(error);
 	}
-	const createdSchedule = {
-		id: uuidv4(),
+	const createdSchedule = new Schedule({
 		title,
 		description,
 		address,
 		location: coordinates,
+		image:
+			"https://www.glastonburyfestivals.co.uk/wp-content/uploads/2019/02/gf-logo-2019.png",
 		creator,
-	};
-	DUMMYSCHEDULES.push(createdSchedule);
+	});
+	try {
+		await createdSchedule.save();
+	} catch (error) {
+		return next(new HttpError("Failed to create new schedule", 500));
+	}
+
 	res.status(201).json({ schedule: createdSchedule });
 };
 
