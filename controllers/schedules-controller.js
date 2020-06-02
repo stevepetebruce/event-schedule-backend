@@ -68,26 +68,41 @@ const createSchedule = async (req, res, next) => {
 	res.status(201).json({ schedule: createdSchedule });
 };
 
-const updateSchedule = (req, res, next) => {
+const updateSchedule = async (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { title, description, coordinates, address } = req.body;
+	const { title, description, address } = req.body;
 	const scheduleId = req.params.sid;
-	const updatedSchedule = {
-		...DUMMYSCHEDULES.find((s) => s.id === scheduleId),
-	};
-	const scheduleIndex = DUMMYSCHEDULES.findIndex((s) => s.id === scheduleId);
 
-	updatedSchedule.title = title;
-	updatedSchedule.description = description;
-	updatedSchedule.location = coordinates;
-	updatedSchedule.address = address;
+	let schedule;
+	try {
+		schedule = await Schedule.findById(scheduleId);
+	} catch (error) {
+		return next(new HttpError("Failed to find schedule", 500));
+	}
 
-	DUMMYSCHEDULES[scheduleIndex] = updatedSchedule;
-	res.status(200).json({ schedule: updatedSchedule });
+	let coordinates;
+	try {
+		coordinates = await getCoordsForAddress(address);
+	} catch (error) {
+		return next(error);
+	}
+
+	schedule.title = title;
+	schedule.description = description;
+	schedule.address = address;
+	schedule.location = coordinates;
+
+	try {
+		await schedule.save();
+	} catch (error) {
+		return next(new HttpError("Failed to update schedule", 500));
+	}
+
+	res.status(200).json({ schedule: schedule.toObject({ getters: true }) });
 };
 
 const deleteSchedule = (req, res, next) => {
