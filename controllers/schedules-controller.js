@@ -105,12 +105,15 @@ const updateSchedule = async (req, res, next) => {
 	res.status(200).json({ schedule: schedule.toObject({ getters: true }) });
 };
 
-const deleteSchedule = (req, res, next) => {
+const deleteSchedule = async (req, res, next) => {
 	const scheduleId = req.params.sid;
-	if (!DUMMYSCHEDULES.find((s) => s.id === scheduleId)) {
-		return next(new HttpError("No Schedule was found", 404));
+
+	try {
+		await Schedule.findById(scheduleId).deleteOne();
+	} catch (error) {
+		return next(new HttpError("Failed to delete schedule", 500));
 	}
-	DUMMYSCHEDULES = DUMMYSCHEDULES.filter((s) => s.id !== scheduleId);
+
 	res.status(200).json({ message: "Deleted Schedule" });
 };
 
