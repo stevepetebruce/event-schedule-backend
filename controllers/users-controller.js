@@ -51,13 +51,20 @@ const signup = async (req, res, next) => {
 	res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
 	const { email, password } = req.body;
-	const identifiedUser = DUMMYUSERS.find((u) => u.email === email);
+
+	let identifiedUser;
+	try {
+		identifiedUser = await User.findOne({ email: email });
+	} catch (error) {
+		return next(new HttpError("Could not find user", 500));
+	}
 
 	if (!identifiedUser || identifiedUser.password !== password) {
-		return next(new HttpError("Could not identify user", 401));
+		return next(new HttpError("Log in failed", 401));
 	}
+
 	res.json({ message: "logged in" });
 };
 
