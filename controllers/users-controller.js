@@ -4,17 +4,14 @@ const { v4: uuidv4 } = require("uuid");
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 
-const DUMMYUSERS = [
-	{
-		id: "U1",
-		name: "Fred Bloggs",
-		email: "test@test.com",
-		password: "testing",
-	},
-];
-
-const getUsers = (req, res, next) => {
-	res.json({ users: DUMMYUSERS });
+const getUsers = async (req, res, next) => {
+	let users;
+	try {
+		users = await User.find({}, "-password");
+	} catch (error) {
+		return next(new HttpError("Failed to find any users", 500));
+	}
+	res.json(users.map((user) => user.toObject({ getters: true })));
 };
 
 const signup = async (req, res, next) => {
