@@ -8,6 +8,7 @@ const userSchema = new Schema({
 	email: { type: String, required: true, unique: true },
 	password: { type: String, required: true, minlength: 6 },
 	schedules: { type: String, required: true },
+	status: { type: String },
 });
 
 userSchema.plugin(uniqueValidator);

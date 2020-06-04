@@ -38,6 +38,7 @@ const signup = async (req, res, next) => {
 		email,
 		password,
 		schedules,
+		status: "public",
 	});
 
 	try {
