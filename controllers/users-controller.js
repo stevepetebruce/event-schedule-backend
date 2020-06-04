@@ -20,7 +20,7 @@ const signup = async (req, res, next) => {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { name, email, password, schedules } = req.body;
+	const { name, email, password } = req.body;
 
 	let existingUser;
 	try {
@@ -37,7 +37,7 @@ const signup = async (req, res, next) => {
 		name,
 		email,
 		password,
-		schedules,
+		schedules: [],
 		status: "public",
 	});
 

@@ -1,9 +1,11 @@
 const { v4: uuidv4 } = require("uuid");
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../utilities/location");
 const Schedule = require("../models/schedule");
+const User = require("../models/user");
 
 const getScheduleById = async (req, res, next) => {
 	const scheduleId = req.params.sid;
@@ -59,8 +61,25 @@ const createSchedule = async (req, res, next) => {
 			"https://www.glastonburyfestivals.co.uk/wp-content/uploads/2019/02/gf-logo-2019.png",
 		creator,
 	});
+
+	let user;
 	try {
-		await createdSchedule.save();
+		user = await User.findById(creator);
+	} catch (error) {
+		return next(new HttpError("No user found", 500));
+	}
+
+	if (!user) {
+		return next(new HttpError("No user found to create schedule", 404));
+	}
+
+	try {
+		const schedSession = await mongoose.startSession();
+		schedSession.startTransaction();
+		await createdSchedule.save({ session: schedSession });
+		user.schedules.push(createdSchedule);
+		await user.save({ session: schedSession });
+		await schedSession.commitTransaction();
 	} catch (error) {
 		return next(new HttpError("Failed to create new schedule", 500));
 	}
