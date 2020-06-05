@@ -126,11 +126,26 @@ const updateSchedule = async (req, res, next) => {
 
 const deleteSchedule = async (req, res, next) => {
 	const scheduleId = req.params.sid;
-
+	let schedule;
 	try {
-		await Schedule.findById(scheduleId).deleteOne();
+		schedule = await Schedule.findById(scheduleId).populate("creator");
 	} catch (error) {
-		return next(new HttpError("Failed to delete schedule", 500));
+		return next(new HttpError("Error finding schedule", 500));
+	}
+
+	if (!schedule) {
+		return next(new HttpError("No schedule found to delete", 404));
+	}
+	try {
+		const delSession = await mongoose.startSession();
+		delSession.startTransaction();
+		await schedule.remove({ session: delSession });
+		schedule.creator.schedules.pull(schedule);
+		await schedule.creator.save({ session: delSession });
+		await delSession.commitTransaction();
+	} catch (error) {
+		console.log("error", error);
+		return next(new HttpError("Failed to delete", 500));
 	}
 
 	res.status(200).json({ message: "Deleted Schedule" });
