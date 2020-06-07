@@ -14,6 +14,16 @@ const app = express();
 
 app.use(bodyparser.json());
 
+app.use((req, res, next) => {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader(
+		"Access-Control-Allow-Headers",
+		"Origin, X-Requested-With, Content-Type, Accept, Authorization"
+	);
+	res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+	next();
+});
+
 app.use("/api/schedules", scheduleRoutes);
 
 app.use("/api", userRoutes);
@@ -31,7 +41,7 @@ app.use((error, req, res, next) => {
 	res.json({ message: error.message || "an unknown error occured" });
 });
 
-const connectUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@schedulecluster0-pj8ef.mongodb.net/schedules?retryWrites=true&w=majority`;
+const connectUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@schedulecluster0-pj8ef.mongodb.net/schedule-app?retryWrites=true&w=majority`;
 const connectConfig = {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
