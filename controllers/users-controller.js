@@ -10,7 +10,7 @@ const getUsers = async (req, res, next) => {
 	} catch (error) {
 		return next(new HttpError("Failed to find any users", 500));
 	}
-	res.json(users.map((user) => user.toObject({ getters: true })));
+	res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
