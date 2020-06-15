@@ -11,7 +11,13 @@ router.get("/user/:uid", schedulesControllers.getSchedulesByUser);
 
 router.post(
 	"/",
-	[check("title").not().isEmpty(), check("description").isLength({ min: 10 })],
+	[
+		check("title").not().isEmpty(),
+		check("description").isLength({ min: 10 }),
+		check("daysQty").isNumeric(),
+		check("scheduleList.*.presenter").not().isEmpty(),
+		check("scheduleList.*.day").toInt(),
+	],
 	schedulesControllers.createSchedule
 );
 

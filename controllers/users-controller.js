@@ -62,7 +62,10 @@ const login = async (req, res, next) => {
 		return next(new HttpError("Log in failed", 401));
 	}
 
-	res.json({ message: "logged in" });
+	res.json({
+		message: "logged in",
+		user: identifiedUser.toObject({ getters: true }),
+	});
 };
 
 exports.getUsers = getUsers;

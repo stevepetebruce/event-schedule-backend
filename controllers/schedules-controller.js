@@ -43,7 +43,15 @@ const createSchedule = async (req, res, next) => {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { title, description, address, creator } = req.body;
+	const {
+		title,
+		description,
+		address,
+		startDate,
+		daysQty,
+		scheduleList,
+		creator,
+	} = req.body;
 
 	let coordinates;
 	try {
@@ -58,6 +66,9 @@ const createSchedule = async (req, res, next) => {
 		location: coordinates,
 		image:
 			"https://www.glastonburyfestivals.co.uk/wp-content/uploads/2019/02/gf-logo-2019.png",
+		startDate,
+		daysQty,
+		scheduleList,
 		creator,
 	});
 
