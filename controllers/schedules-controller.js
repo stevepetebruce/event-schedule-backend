@@ -103,7 +103,7 @@ const updateSchedule = async (req, res, next) => {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { title, description, address } = req.body;
+	const { title, description, startDate, daysQty, scheduleList } = req.body;
 	const scheduleId = req.params.sid;
 
 	let schedule;
@@ -113,17 +113,11 @@ const updateSchedule = async (req, res, next) => {
 		return next(new HttpError("Failed to find schedule", 500));
 	}
 
-	let coordinates;
-	try {
-		coordinates = await getCoordsForAddress(address);
-	} catch (error) {
-		return next(error);
-	}
-
 	schedule.title = title;
 	schedule.description = description;
-	schedule.address = address;
-	schedule.location = coordinates;
+	schedule.startDate = startDate;
+	schedule.daysQty = daysQty;
+	schedule.scheduleList = scheduleList;
 
 	try {
 		await schedule.save();
