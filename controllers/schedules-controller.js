@@ -31,9 +31,7 @@ const getSchedulesByUser = async (req, res, next) => {
 	} catch (error) {
 		return next(new HttpError("Failed to find user", 500));
 	}
-	if (!schedules || schedules.length === 0) {
-		return next(new HttpError("No user was found with this Id", 404));
-	}
+
 	res.json({ schedules: schedules.map((s) => s.toObject({ getters: true })) });
 };
 
