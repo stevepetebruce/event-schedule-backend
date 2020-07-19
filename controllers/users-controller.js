@@ -1,4 +1,6 @@
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
@@ -31,11 +33,17 @@ const signup = async (req, res, next) => {
 	if (existingUser) {
 		return next(new HttpError("User already exists. Please log in", 422));
 	}
+	let hashedPassword;
+	try {
+		hashedPassword = await bcrypt.hash(password, 12);
+	} catch (error) {
+		return next(new HttpError("Could not create user. Please try again.", 500));
+	}
 
 	const createdUser = new User({
 		name,
 		email,
-		password,
+		password: hashedPassword,
 		schedules: [],
 		status: "public",
 	});
@@ -45,7 +53,21 @@ const signup = async (req, res, next) => {
 	} catch (error) {
 		return next(new HttpError("Sign up failed", 500));
 	}
-	res.status(201).json({ user: createdUser.toObject({ getters: true }) });
+
+	let token;
+	try {
+		jwt.sign(
+			{ userId: createdUser.id, email: createdUser.email },
+			"secretjwt_string",
+			{ expiresIn: "1h" }
+		);
+	} catch (error) {
+		return next(new HttpError("Sign up failed", 500));
+	}
+
+	res
+		.status(201)
+		.json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
 
 const login = async (req, res, next) => {
@@ -58,13 +80,41 @@ const login = async (req, res, next) => {
 		return next(new HttpError("Could not find user", 500));
 	}
 
-	if (!identifiedUser || identifiedUser.password !== password) {
+	if (!identifiedUser) {
+		return next(new HttpError("Log in failed", 401));
+	}
+
+	let isValidPassword = false;
+	try {
+		isValidPassword = await bcrypt.compare(password, identifiedUser.password);
+	} catch (error) {
+		return next(
+			new HttpError(
+				"Could not log you in. Please check you entered your password correctly",
+				500
+			)
+		);
+	}
+
+	if (!isValidPassword) {
+		return next(new HttpError("Log in failed", 401));
+	}
+
+	let token;
+	try {
+		token = jwt.sign(
+			{ userId: identifiedUser.id, email: identifiedUser.email },
+			"secretjwt_string",
+			{ expiresIn: "1h" }
+		);
+	} catch (error) {
 		return next(new HttpError("Log in failed", 401));
 	}
 
 	res.json({
-		message: "logged in",
-		user: identifiedUser.toObject({ getters: true }),
+		userId: identifiedUser.id,
+		email: identifiedUser.email,
+		token: token,
 	});
 };
 
