@@ -1,6 +1,9 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+dotenv.config();
+const MY_JWT = process.env.MY_JWT;
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
@@ -56,10 +59,12 @@ const signup = async (req, res, next) => {
 
 	let token;
 	try {
-		jwt.sign(
+		token = jwt.sign(
 			{ userId: createdUser.id, email: createdUser.email },
-			"secretjwt_string",
-			{ expiresIn: "1h" }
+			MY_JWT,
+			{
+				expiresIn: "1h",
+			}
 		);
 	} catch (error) {
 		return next(new HttpError("Sign up failed", 500));
@@ -103,8 +108,12 @@ const login = async (req, res, next) => {
 	let token;
 	try {
 		token = jwt.sign(
-			{ userId: identifiedUser.id, email: identifiedUser.email },
-			"secretjwt_string",
+			{
+				userId: identifiedUser.id,
+				email: identifiedUser.email,
+				status: identifiedUser.status,
+			},
+			MY_JWT,
 			{ expiresIn: "1h" }
 		);
 	} catch (error) {
@@ -115,6 +124,7 @@ const login = async (req, res, next) => {
 		userId: identifiedUser.id,
 		email: identifiedUser.email,
 		token: token,
+		status: identifiedUser.status,
 	});
 };
 

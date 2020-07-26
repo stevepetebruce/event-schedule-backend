@@ -3,10 +3,13 @@ const { check } = require("express-validator");
 
 const schedulesControllers = require("../controllers/schedules-controller");
 const fileUpload = require("../middlewear/file-upload");
+const checkAuth = require("../middlewear/check-auth");
 
 const router = express.Router();
 
 router.get("/:sid", schedulesControllers.getScheduleById);
+
+router.use(checkAuth);
 
 router.get("/user/:uid", schedulesControllers.getSchedulesByUser);
 
