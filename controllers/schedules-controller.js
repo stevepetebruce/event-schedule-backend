@@ -111,6 +111,12 @@ const updateSchedule = async (req, res, next) => {
 		return next(new HttpError("Failed to find schedule", 500));
 	}
 
+	if (schedule.creator.toString() !== req.userData.userId) {
+		return next(
+			new HttpError("You are not permitted to edit this schedule", 401)
+		);
+	}
+
 	schedule.title = title;
 	schedule.description = description;
 	schedule.startDate = startDate;
@@ -138,6 +144,13 @@ const deleteSchedule = async (req, res, next) => {
 	if (!schedule) {
 		return next(new HttpError("No schedule found to delete", 404));
 	}
+
+	if (schedule.creator.id !== req.userData.userId) {
+		return next(
+			new HttpError("You are not permitted to delete this schedule", 401)
+		);
+	}
+
 	try {
 		const delSession = await mongoose.startSession();
 		delSession.startTransaction();
