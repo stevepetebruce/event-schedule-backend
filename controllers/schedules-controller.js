@@ -2,7 +2,6 @@ const { validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 
 const HttpError = require("../models/http-error");
-const getCoordsForAddress = require("../utilities/location");
 const Schedule = require("../models/schedule");
 const User = require("../models/user");
 
@@ -44,24 +43,15 @@ const createSchedule = async (req, res, next) => {
 	const {
 		title,
 		description,
-		address,
 		startDate,
 		daysQty,
 		scheduleList,
 		creator,
 	} = req.body;
 
-	let coordinates;
-	try {
-		coordinates = await getCoordsForAddress(address);
-	} catch (error) {
-		return next(error);
-	}
 	const createdSchedule = new Schedule({
 		title,
 		description,
-		address,
-		location: coordinates,
 		image:
 			"https://www.glastonburyfestivals.co.uk/wp-content/uploads/2019/02/gf-logo-2019.png",
 		startDate,
