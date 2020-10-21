@@ -21,6 +21,31 @@ const getScheduleById = async (req, res, next) => {
 	res.json({ schedule: schedule.toObject({ getters: true }) });
 };
 
+const getScheduleByIdByDay = async (req, res, next) => {
+	const scheduleId = req.params.sid;
+	const day = req.params.day;
+
+	let schedule;
+	try {
+		schedule = await Schedule.findById(scheduleId);
+		const scheduleByDay = schedule.scheduleList.filter((d) => {
+			return parseInt(d.day) === parseInt(day);
+		});
+		schedule.scheduleList.splice(
+			0,
+			schedule.scheduleList.length,
+			...scheduleByDay
+		);
+	} catch (error) {
+		return next(new HttpError("Failed to find schedule", 500));
+	}
+
+	if (!schedule) {
+		return next(new HttpError("No schedule was found with this id", 404));
+	}
+	res.json({ schedule: schedule.toObject({ getters: true }) });
+};
+
 const getSchedulesByUser = async (req, res, next) => {
 	const userId = req.params.uid;
 
@@ -157,6 +182,7 @@ const deleteSchedule = async (req, res, next) => {
 };
 
 exports.getScheduleById = getScheduleById;
+exports.getScheduleByIdByDay = getScheduleByIdByDay;
 exports.getSchedulesByUser = getSchedulesByUser;
 exports.createSchedule = createSchedule;
 exports.updateSchedule = updateSchedule;

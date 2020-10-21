@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.get("/:sid", schedulesControllers.getScheduleById);
 
+router.get("/display/:sid/:day", schedulesControllers.getScheduleByIdByDay);
+
 router.use(checkAuth);
 
 router.get("/user/:uid", schedulesControllers.getSchedulesByUser);
