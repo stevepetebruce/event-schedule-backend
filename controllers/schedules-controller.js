@@ -66,6 +66,7 @@ const createSchedule = async (req, res, next) => {
 	}
 
 	const {
+		logo,
 		title,
 		description,
 		startDate,
@@ -75,10 +76,9 @@ const createSchedule = async (req, res, next) => {
 	} = req.body;
 
 	const createdSchedule = new Schedule({
+		logo,
 		title,
 		description,
-		image:
-			"https://www.glastonburyfestivals.co.uk/wp-content/uploads/2019/02/gf-logo-2019.png",
 		startDate,
 		daysQty,
 		scheduleList,
@@ -116,7 +116,7 @@ const updateSchedule = async (req, res, next) => {
 		return next(new HttpError("Invalid inputs", 422));
 	}
 
-	const { title, description, startDate, daysQty, scheduleList } = req.body;
+	const { logo, title, description, startDate, daysQty, scheduleList } = req.body;
 	const scheduleId = req.params.sid;
 
 	let schedule;
@@ -132,6 +132,7 @@ const updateSchedule = async (req, res, next) => {
 		);
 	}
 
+	schedule.logo = logo;
 	schedule.title = title;
 	schedule.description = description;
 	schedule.startDate = startDate;

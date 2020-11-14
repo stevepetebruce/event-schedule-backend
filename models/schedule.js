@@ -4,9 +4,9 @@ const Schema = mongoose.Schema;
 
 const scheduleSchema = new Schema(
 	{
+		logo: { type: String },
 		title: { type: String, required: true },
 		description: { type: String, required: true },
-		image: { type: String, required: true },
 		startDate: { type: Date, required: true },
 		daysQty: { type: Number, required: true },
 		scheduleList: { type: Array, required: true },

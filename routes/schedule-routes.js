@@ -2,7 +2,6 @@ const express = require("express");
 const { check } = require("express-validator");
 
 const schedulesControllers = require("../controllers/schedules-controller");
-const fileUpload = require("../middlewear/file-upload");
 const checkAuth = require("../middlewear/check-auth");
 
 const router = express.Router();
@@ -17,7 +16,6 @@ router.get("/user/:uid", schedulesControllers.getSchedulesByUser);
 
 router.post(
 	"/",
-	fileUpload.single("image"),
 	[
 		check("title").not().isEmpty(),
 		check("description").isLength({ min: 10 }),
