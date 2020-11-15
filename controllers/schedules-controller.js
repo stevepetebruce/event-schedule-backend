@@ -51,7 +51,7 @@ const getSchedulesByUser = async (req, res, next) => {
 
 	let schedules;
 	try {
-		schedules = await Schedule.find({ creator: userId });
+		schedules = await Schedule.find({ creator: userId }).sort({'updatedAt': -1});
 	} catch (error) {
 		return next(new HttpError("Failed to find user", 500));
 	}
