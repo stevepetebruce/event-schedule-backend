@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const DB_USERNAME = process.env.MONGO_DB_USERNAME;
 const DB_PASSWORD = process.env.MONGO_DB_ACCESS;
+const DB_APPNAME = process.env.MONGO_DB_APP_NAME;
 
 const scheduleRoutes = require("./routes/schedule-routes");
 const userRoutes = require("./routes/user-routes");
@@ -41,7 +42,7 @@ app.use((error, req, res, next) => {
 	res.json({ message: error.message || "an unknown error occured" });
 });
 
-const connectUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@schedulecluster0-pj8ef.mongodb.net/schedule-app?retryWrites=true&w=majority`;
+const connectUrl = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@schedulecluster0-pj8ef.mongodb.net/${DB_APPNAME}?retryWrites=true&w=majority`;
 const connectConfig = {
 	useNewUrlParser: true,
 	useUnifiedTopology: true,
